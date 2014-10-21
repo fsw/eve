@@ -1,0 +1,19 @@
+{
+    "name": "cadosolutions/eve",
+    "type": "library",
+    "description": "Simple PHP 5.4 Framework",
+    "keywords": ["framework"],
+    "homepage": "https://github.com/fsw/eve/",
+    "license": "custom",
+    "authors": [
+        {
+            "name": "Frank Wawrzak",
+            "homepage": "http://cadosolutions.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0"
+    },
+
+}
