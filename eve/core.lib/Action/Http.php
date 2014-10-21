@@ -28,15 +28,19 @@ abstract class Action_Http extends Action
 	{
 	  $args = func_get_args();
 	  
-	  $name = lcfirst(str_replace('Action_', '', get_called_class()));
+	  $name = '/' . lcfirst(str_replace('Action_', '', get_called_class()));
 	  
 	  foreach(Eve::getClassAnnotations(get_called_class()) as $annotation){
 		if ($annotation instanceof UrlName){ 
-                    $name = $annotation->value;
+		    if($annotation->value == null){
+			$name = '';
+		    } else {
+			$name = '/' . $annotation->value;
+		    }
 		}
 	  }
 	  
-	  return '/' . $name . (empty($args) ? '' : ('/' . implode('/', $args)));
+	  return $name . (empty($args) ? '' : ('/' . implode('/', $args)));
 	}
 	
 }

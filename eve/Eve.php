@@ -151,8 +151,8 @@ final class Eve
 		    //TODO create array-cached routing here!!!!
 		    if ($bits[0] == '') {
 			$className = 'Action_Index';
-		    } elseif($bits[0] == 'page') {
-			$className = 'Action_ShowFlatpage';
+		    //} elseif($bits[0] == 'page') {
+			//$className = 'Action_ShowFlatpage';
 		    } elseif($bits[0] == 'land') {
 			$className = 'Action_ShowLandingPage';
 		    } elseif($bits[0] == 'range') {
@@ -165,12 +165,15 @@ final class Eve
 		    
 		    //var_dump($className);
 		    if (!static::classExists($className)) {
-			throw new NotFoundException();
+			//throw new NotFoundException();
+			$className = 'Action_ShowFlatpage';
+			$bit_idx = 0;
+		    } else {
+			$bit_idx = 1;
 		    }
 		    
 		    $action = new $className();
 		    //var_dump('111');
-		    $bit_idx = 1;
 		    foreach(self::getFieldsAnnotations($className) as $field => $annotations){
 			foreach($annotations as $annotation){
 			    if ($annotation instanceof Param){
@@ -180,6 +183,9 @@ final class Eve
 				    $action->$field = $bits[$bit_idx];
 				} elseif (is_subclass_of($annotation->value, Entity)) {
 				    $action->$field = call_user_func(array($annotation->value, 'getByUrlParam'), $bits[$bit_idx]);
+				    if (empty($action->$field)) {
+				      throw new NotFoundException();
+				    }
 				} else {
 				    throw new NotFoundException();
 				}
