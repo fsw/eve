@@ -39,7 +39,7 @@ abstract class Action_HTML5 extends Action_Http
 		    <meta name="keywords" content="<?php echo $this->getSeoKeywords(); ?>">
 		    <meta name="viewport" content="width=device-width, initial-scale=1">
 		    <?php foreach($this->getStylesheetsUrls() as $url) :?>
-		    <link rel="stylesheet" href="<?php echo $url; ?>?<?php echo EVE_BUILD_ID ?>">
+		    <link rel="stylesheet" href="<?php echo $url; ?>">
 		    <?php endforeach; ?>
 
 		    <!--[if lt IE 9]>
@@ -48,15 +48,6 @@ abstract class Action_HTML5 extends Action_Http
 		    <?php $this->sectionExtraHead(); ?>
 		</head>
 		<body>
-		    <!-- Google Tag Manager -->
-		    <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-K5D8RX"
-		    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-		    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-		    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-		    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-		    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-		    })(window,document,'script','dataLayer','GTM-K5D8RX');</script>
-		    <!-- End Google Tag Manager -->
 		    <!--[if lt IE 7]>
 			<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
 		    <![endif]-->
@@ -65,7 +56,7 @@ abstract class Action_HTML5 extends Action_Http
 		    <script>window.jQuery || document.write('<script src="/static/js/vendor/jquery-1.11.1.min.js"><\/script>')</script>
 
 		    <?php foreach($this->getScriptsUrls() as $url) :?>
-		      <script src="<?php echo $url; ?>?<?php echo EVE_BUILD_ID ?>"></script>
+		      <script src="<?php echo $url; ?>"></script>
 		    <?php endforeach; ?>
 		    
 		    <?php $this->sectionExtraBody(); ?>

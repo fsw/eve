@@ -107,23 +107,23 @@ final class Eve
             if (isset($routing[$bits[0]])) {
                 $className = $routing[array_shift($bits)];
             } else {
-                // throw new NotFoundException();
-                $className = 'Action_ShowFlatpage';
+                throw new NotFoundException();
+               // $className = 'Action_ShowFlatpage';
             }
-            //var_dump($className, $bits, $routing);
+
             $action = new $className();
             foreach (self::getFieldsAnnotations($className) as $field => $annotations) {
                 foreach ($annotations as $annotation) {
                     if ($annotation instanceof Param) {
-                        if ($annotation->value == 'int') {
-                            $action->$field = (int) array_shift($bits);
-                        } elseif ($annotation->value == 'string') {
-                            $action->$field = array_shift($bits);
-                        } elseif (is_subclass_of($annotation->value, Entity)) {
-                            $action->$field = call_user_func(array(
-                                    $annotation->value,
-                                    'getByUrlParam'
-                            ), array_shift($bits));
+                        //var_dump($annotation);
+                        $value = count($bits) > 0 ? array_shift($bits) : $annotation->default;
+                        if ($annotation->type == 'int') {
+                            $action->$field = (int) $value;
+                        } elseif ($annotation->type == 'string') {
+                            $action->$field = $value;
+                        } elseif (is_subclass_of($annotation->type, 'Entity')) {
+                            //var_dump($annotation);
+                            $action->$field = call_user_func([$annotation->value, 'getByUrlParam'], $value);
                             if (empty($action->$field)) {
                                 throw new NotFoundException();
                             }
@@ -133,27 +133,32 @@ final class Eve
                     }
                 }
             }
+            //var_dump($className, $bits, $routing);
             if (!empty($bits)) {
                 throw new NotFoundException();
             }
     
             $action->run();
         } catch (NotFoundException $e) {
-    
             (new Action_404())->run();
         }
         // echo $path;
     }
     
     public static function executeCliCommand ($argv) {
-        //action name
-        $actionName = array_shift($argv);
         $actions = [];
         foreach (Eve::getDescendants ('Action_Command') as $actionClass) {
             $actions[lcfirst(str_replace('Action_', '', $actionClass))] = $actionClass;
         }
-        
-        var_dump('KAKAKAKAKAKLA', $actionName, $actions); die();
+        //action name
+        $actionName = array_shift($argv);
+        if (empty($actionName) || !isset($actions[$actionName])) {
+            print("ACTIONS:");
+            var_dump($actions);
+        } else {
+            $action = new $actions[$actionName]();
+            $action->executeByArgv($argv);
+        }
     }
     
     public static function run ($modules, $settings) {
@@ -163,7 +168,9 @@ final class Eve
             global $argv;
             //script name
             array_shift($argv);
-            Eve::executeCliCommand($argv);
+            Eve::executeCliCommand ($argv);
+        } elseif (PHP_SAPI === 'cli-server') {
+            Eve::executeRequest ($_SERVER["REQUEST_URI"]);
         } else {
             Eve::executeRequest ($_SERVER["REQUEST_URI"]);
         }
@@ -333,7 +340,6 @@ final class Eve
         return array_keys($ret);
     }
 
-    /** this function should never be called in a normal application workflow */
     private static function includeAll () {
         if (static::$allIncluded) {
             return true;

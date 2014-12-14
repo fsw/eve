@@ -1,3 +1,10 @@
 <?php
 //Action Parameter annotation
-class Param extends Annotation {}
+/** Target('property') */
+class Param extends Annotation {
+
+    public $type;
+    public $default;
+    
+    
+}

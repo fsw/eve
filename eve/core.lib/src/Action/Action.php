@@ -7,8 +7,5 @@
 
 abstract class Action
 {	
-	public function run()
-	{
-	    die('override me');
-	}
+	abstract public function run();
 }

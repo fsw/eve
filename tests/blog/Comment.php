@@ -1,11 +1,13 @@
 <?php
+namespace Model;
+
 class Comment extends Entity
 {
 
-    /** @Field_Relation(toEntity='Post') */
+    /** @Field_Relation(to='Post') */
     public $post;
 
-    /** @Field_Relation(toEntity='User') */
+    /** @Field_Relation(to='User') */
     public $user;
 
     /** @Field_Text */

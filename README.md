@@ -1,5 +1,4 @@
-Very Simple PHP Framework.
+Simple PHP 5.4 Framework.
 
-It is designed to be easily embeddble into working PHP solutions.
+For an example / quick start guide please see tests/blog folder.
 
-For a Quick Start Guide please see tests/site1.php file.

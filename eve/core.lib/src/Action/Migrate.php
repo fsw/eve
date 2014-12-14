@@ -21,17 +21,12 @@ class Action_Migrate extends Action_Command
 				      $tables[$tableName][$subkey] = $def;
 				}
 		      }
-		      //TODO!
+		      //TODO indexes!
 		      $tables[$tableName]['index_primary'] = 'PRIMARY KEY (`id`)';
-
-		      //var_dump($tableName, $fields);
-		      //$tables = array_merge($tables, $entity::_getDbStructure());
 		}
-		$db = new Db(['dsn' => EVE_DB_DSN, 'user' => EVE_DB_USER, 'pass' => EVE_DB_PASS]);
+		$db = new Db(Eve::setting('db'));
 		$tools = new db_Tools($db);
 		$sqls = $tools->diffStructures($tools->getStructure(), $tables);
-		//var_dump($tools->getStructure(), $tables);
-		//var_dump($sqls);
 		foreach ($sqls as $key => $q)
 		{
 			$sql = '-- ' . $key . NL;
@@ -39,56 +34,33 @@ class Action_Migrate extends Action_Command
 			echo nl2br($sql);
 			$db->query($sql);
 		}
-		//die('MIGRATE');
 	}
 }
 
+/* TODO xref many to many relations / versioned entities / indexes
 
-/*
-public static function _getDbStructure()
+	$ret = array();
+	$ret[static::getTableName()] = array();
+	foreach (static::getFields() as $key => $field)
 	{
-		$ret = array();
-		$ret[static::getTableName()] = array();
-		foreach (static::getFields() as $key => $field)
+		if ($field instanceof field_relation_Many)
 		{
-			if ($field instanceof field_relation_Many)
-			{
-				$f = new field_Number();
-				$ret[static::getTableName() . '_xref_' . $key] = array(
-						static::getBaseName() . '_id' => $f->getDbDefinition(),
-						$key . '_id' => $f->getDbDefinition()
-				);
-			}
-			elseif ($field instanceof field_relation_Container)
-			{
-	
-			}
-			else
-			{
-				$definition = $field->getDbDefinition();
-				if (is_array($definition))
-				{
-					foreach ($definition as $subkey => $def)
-					{
-						$ret[static::getTableName()][$key . '_' . $subkey] = $def;
-					}
-				}
-				else
-				{
-					$ret[static::getTableName()][$key] = $definition;
-				}
-			}
+			$f = new field_Number();
+			$ret[static::getTableName() . '_xref_' . $key] = array(
+					static::getBaseName() . '_id' => $f->getDbDefinition(),
+					$key . '_id' => $f->getDbDefinition()
+			);
 		}
-		if (!empty(static::$versioned))
-		{
-			$ret[static::getRevisionsTableName()] = static::getRevisionsTableStructure($ret[static::getTableName()]);
-		}
-		foreach (static::getIndexes() as $key => $field)
-		{
-			$unique = ($key == 'primary') || array_shift($field);
-			$ret[static::getTableName()]['index_' . $key] =
-			($key == 'primary' ? 'PRIMARY KEY' : (($unique ? 'UNIQUE ' : '') . 'KEY ' . '`index_' . $key . '`'))
-			. ' (`' . implode($field , '`,`') . '`)';
-		}
-		return $ret;
 	}
+	if (!empty(static::$versioned))
+	{
+		$ret[static::getRevisionsTableName()] = static::getRevisionsTableStructure($ret[static::getTableName()]);
+	}
+	foreach (static::getIndexes() as $key => $field)
+	{
+		$unique = ($key == 'primary') || array_shift($field);
+		$ret[static::getTableName()]['index_' . $key] =
+		($key == 'primary' ? 'PRIMARY KEY' : (($unique ? 'UNIQUE ' : '') . 'KEY ' . '`index_' . $key . '`'))
+		. ' (`' . implode($field , '`,`') . '`)';
+	}
+*/

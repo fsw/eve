@@ -1,11 +1,14 @@
 <?php
+namespace Model;
 
 class Post extends Entity
 {
 
     use Entity_ContentTrait;
+    
+    use Entity_VersionableTrait;
 
-    /** @Field_Relation(toEntity='Category') */
+    /** @Field_Relation(to='Category') */
     public $category;
 
     /** @Field_Html */
