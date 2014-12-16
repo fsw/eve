@@ -48,10 +48,12 @@ abstract class Action_Command
                 if ($annotation instanceof Param) {
                     if ($annotation->default === null) {
                         $callName .= ' <' . $field . '>';
-                        $arguments['<' . $field . '>'] = $annotation->helpText;
-                    } else {
-                        $arguments['--' . $field . '=<' . $field . '>'] = '(optional) ' . $annotation->helpText;
+                        $desc = $annotation->helpText;
+                    } else { 
+                        $callName .= ' [--' . $field . ($annotation->type === 'bool' ? '' : ('=<' . $field . '>')) . ']';
+                        $desc = '(optional) ' . $annotation->helpText;
                     }
+                    $arguments[$field . '(' . $annotation->type . ')'] = $desc; 
                 }
             }
         }
@@ -110,7 +112,14 @@ abstract class Action_Command
     
     protected function readLine()
     {
-        $line = trim(fgets(STDIN)); // reads one line from STDIN
-        fscanf(STDIN, "%d\n", $number); // reads number from STDIN
+        return trim(fgets(STDIN)); // reads one line from STDIN
+        //fscanf(STDIN, "%d\n", $number); // reads number from STDIN
     }
+    
+    protected function readChar()
+    {
+        return fgetc(STDIN);
+    }
+    
+    
 }

@@ -2,47 +2,56 @@
 
 /** @Command(helpText='uses current db connection to check for database differences') */
 class Command_Migrate extends Action_Command
-{	
-    /** @Param(type='bool', default=false, helpText='If set, migrate will ignore current db structure and generate the create statements') */
+{
+
+    /** @Param(type='bool', default=false, helpText='If set, migrate will ignore
+     * current db structure and generate the create statements') */
     public $initial;
-    
-    /** @Param(type='bool', default=false, helpText='This command will ask if it shall run generated alters one by one') */
+
+    /** @Param(type='bool', default=false, helpText='This command will ask if it
+     * shall run generated alters one by one') */
     public $interactive;
-    
-	public function run()
-	{
-	    var_dump($this->initial);
-		$tables = array();
-		foreach (Eve::getDescendants('Entity') as $entityClass)
-		{
-		      $method = new ReflectionMethod($entityClass, 'getFields');
-		      $method->setAccessible(true);
-		      $fields = $method->invoke(null);
-		      $method = new ReflectionMethod($entityClass, 'getTableName');
-		      $method->setAccessible(true);
-		      $tableName = $method->invoke(null);
-		      $tables[$tableName] = array();
-		      foreach ($fields as $key => $field)
-		      {
-				$definition = $field->getDbDefinition();
-				foreach ($definition as $subkey => $def) {
-				      $tables[$tableName][$subkey] = $def;
-				}
-		      }
-		      //TODO indexes!
-		      $tables[$tableName]['index_primary'] = 'PRIMARY KEY (`id`)';
-		}
-		$db = new Db(Eve::setting('db'));
-		$tools = new db_Tools($db);
-		$sqls = $tools->diffStructures($tools->getStructure(), $tables);
-		foreach ($sqls as $key => $q)
-		{
-			$sql = '-- ' . $key . NL;
-			$sql .= $q . ';' . NL;
-			echo nl2br($sql);
-			$db->query($sql);
-		}
-	}
+
+    public function run () {
+        $tables = array();
+        foreach (Eve::getDescendants('Entity') as $entityClass) {
+            $method = new ReflectionMethod($entityClass, 'getFields');
+            $method->setAccessible(true);
+            $fields = $method->invoke(null);
+            $method = new ReflectionMethod($entityClass, 'getTableName');
+            $method->setAccessible(true);
+            $tableName = $method->invoke(null);
+            $tables[$tableName] = array();
+            foreach ($fields as $key => $field) {
+                $definition = $field->getDbDefinition();
+                foreach ($definition as $subkey => $def) {
+                    $tables[$tableName][$subkey] = $def;
+                }
+            }
+            // TODO indexes!
+            $tables[$tableName]['index_primary'] = 'PRIMARY KEY (`id`)';
+        }
+        $db = new Db(Eve::setting('db'));
+        $tools = new db_Tools($db);
+        $sqls = $tools->diffStructures($this->initial ? array() : $tools->getStructure(), $tables);
+        if (empty($sqls)) {
+            print 'no differences in database found' . NL;
+        } else {
+            foreach ($sqls as $key => $q) {
+                $sql = '-- ' . $key . NL;
+                $sql .= $q . ';' . NL;
+                $sql .= NL;
+                print $sql;
+                if ($this->interactive) {
+                    print 'Do you want to run this query now[y/n]?' . NL;
+                    if ($this->readChar() == 'y'){
+                        print 'RUNNING' . NL;
+                        $db->query($sql);
+                    }
+                }
+            }
+        }
+    }
 }
 
 /* TODO xref many to many relations / versioned entities / indexes
