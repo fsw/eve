@@ -1,6 +1,6 @@
 <?php
 
-abstract class Action_Form extends Action_Frontend
+abstract class Action_Form extends Frontend
 {
 
     protected $success = false;

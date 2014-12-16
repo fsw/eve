@@ -1,9 +1,17 @@
 <?php
 
-class Action_Migrate extends Action_Command
+/** @Command(helpText='uses current db connection to check for database differences') */
+class Command_Migrate extends Action_Command
 {	
+    /** @Param(type='bool', default=false, helpText='If set, migrate will ignore current db structure and generate the create statements') */
+    public $initial;
+    
+    /** @Param(type='bool', default=false, helpText='This command will ask if it shall run generated alters one by one') */
+    public $interactive;
+    
 	public function run()
 	{
+	    var_dump($this->initial);
 		$tables = array();
 		foreach (Eve::getDescendants('Entity') as $entityClass)
 		{

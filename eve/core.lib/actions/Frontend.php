@@ -1,6 +1,6 @@
 <?php
 
-abstract class Action_Frontend extends Action_HTML5 {
+abstract class Frontend extends Action_HTML5 {
    
    protected function getStylesheetsUrls(){
 	  $ret = parent::getStylesheetsUrls();

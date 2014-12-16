@@ -11,7 +11,7 @@
  
 trait Entity_TreeTrait {	
 
-    /** @Field_Relation(toEntity='self') */
+    /** @Field_Relation(to='self') */
     public $parent;
     
     /** @Field_Int(hasFormInput=false) */

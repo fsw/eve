@@ -5,7 +5,7 @@
  * @author fsw
  */
 
-class Action_404 extends Action_Frontend
+class Exception404 extends Frontend
 {
 	protected function sectionContent()
 	{

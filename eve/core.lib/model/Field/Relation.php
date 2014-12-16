@@ -2,14 +2,14 @@
 
 class Field_Relation extends Field {
 
-        public $toEntity;
+        public $to;
 
         public function getFormInput($value){
 		$ret = '<select id="' . $this->name . '" name="' . $this->name . '" class="form-control input-md"'. ( $this->isRequired() ? ' required=""' : '').'>';
 		if (!$this->isRequired()) {
 		      $ret .= '<option value="0">-- None --</option>';
 		}
-		foreach (call_user_func(array(($this->toEntity === 'self') ? $this->entity : $this->toEntity,'getAll')) as $related){
+		foreach (call_user_func(array(($this->to === 'self') ? $this->entity : $this->to,'getAll')) as $related){
 		      $name = (string)$related;
 		      //TODO if tree trait
 		      if (!empty($related->level)){
@@ -22,11 +22,11 @@ class Field_Relation extends Field {
         }
         
 	public function updateWithPost($value, $post){
-		return isset($_POST[$this->name]) ? new Entity_Promise(($this->toEntity === 'self') ? $this->entity : $this->toEntity, $post[$this->name]) : $value;
+		return isset($_POST[$this->name]) ? new Entity_Promise(($this->to === 'self') ? $this->entity : $this->to, $post[$this->name]) : $value;
         }
         
 	public function fromDbRow($row){
-		return new Entity_Promise(($this->toEntity === 'self') ? $this->entity : $this->toEntity, $row[$this->name . '_id']);
+		return new Entity_Promise(($this->to === 'self') ? $this->entity : $this->to, $row[$this->name . '_id']);
         }
 	
 	public function toDbRow($value){

@@ -140,21 +140,25 @@ final class Eve
     
             $action->run();
         } catch (NotFoundException $e) {
-            (new Action_404())->run();
+            (new Exception404())->run();
         }
         // echo $path;
     }
     
     public static function executeCliCommand ($argv) {
+        $scriptName = array_shift($argv);
         $actions = [];
         foreach (Eve::getDescendants ('Action_Command') as $actionClass) {
-            $actions[lcfirst(str_replace('Action_', '', $actionClass))] = $actionClass;
+            $actions[$actionClass::getShortName()] = $actionClass;
         }
-        //action name
         $actionName = array_shift($argv);
         if (empty($actionName) || !isset($actions[$actionName])) {
-            print("ACTIONS:");
-            var_dump($actions);
+            print "usage:\n";
+            print "$ php $scriptName <action> [parameters...]\n";
+            print "available actions:\n";
+            foreach ($actions as $actionClass){
+                print $actionClass::getShortHelp();
+            }
         } else {
             $action = new $actions[$actionName]();
             $action->executeByArgv($argv);
@@ -167,7 +171,6 @@ final class Eve
         if (PHP_SAPI === 'cli') {
             global $argv;
             //script name
-            array_shift($argv);
             Eve::executeCliCommand ($argv);
         } elseif (PHP_SAPI === 'cli-server') {
             Eve::executeRequest ($_SERVER["REQUEST_URI"]);
@@ -232,7 +235,7 @@ final class Eve
     }
 
     public static function getFieldsAnnotations ($className) {
-        // TODO array cache
+        // TODO apc
         $return = array();
         // WAITING FOR:
         // https://wiki.php.net/rfc/annotations
@@ -278,8 +281,10 @@ final class Eve
         $baseName = array_pop($path);
         $path = implode(DS, $path);
         foreach (static::$libRoots as $root) {
-            $searchFiles[] = $root . 'src' . DS . (empty($path) ? '' : $path . DS) . $baseName . '.php';
-            $searchFiles[] = $root . 'src' . DS . (empty($path) ? '' : $path . DS) . $baseName . DS . $baseName . '.php';
+            foreach (['actions', 'model', 'lib'] as $srcDir) {
+                $searchFiles[] = $root . $srcDir . DS . (empty($path) ? '' : $path . DS) . $baseName . '.php';
+                $searchFiles[] = $root . $srcDir . DS . (empty($path) ? '' : $path . DS) . $baseName . DS . $baseName . '.php';
+            }
         }
         //var_dump($searchFiles);
         foreach ($searchFiles as $file) {
@@ -351,40 +356,44 @@ final class Eve
             $included[$class] = true;
         }
         foreach (static::$libRoots as $root) {
-            $files = Fs::listFiles($root . 'src', true, true);
-            //var_dump($root, $files);
-            foreach ($files as $file) {
-                $relative = substr($file, strlen($root . 'src' . DS));
-                if (strpos($relative, '_') === 0) {
-                    continue;
-                }
-                
-                $ext = substr(basename($file), strpos(basename($file), '.') + 1);
-                if (($ext == 'php') && (strpos($file, '.svn') === false)) {
-                    $className = substr($file, strlen($root . 'src' . DS));
-                    $className = substr($className, 0, strrpos($className, '.php'));
-                    $className = explode('/', $className);
-                    if (count($className) > 1) {
-                        $last = array_pop($className);
-                        $prev = array_pop($className);
-                        if (ucfirst($prev) == $last) {
-                            $className[] = $last;
-                        } else {
-                            $className[] = $prev;
-                            $className[] = $last;
+            foreach (['actions', 'model', 'lib'] as $srcDir) {
+                if (Fs::exists($root . $srcDir)) {
+                    $files = Fs::listFiles($root . $srcDir, true, true);
+                    //var_dump($root, $files);
+                    foreach ($files as $file) {
+                        $relative = substr($file, strlen($root . $srcDir . DS));
+                        if (strpos($relative, '_') === 0) {
+                            continue;
                         }
-                    }
-                    $className = implode('_', $className);
-                    //var_dump($className);
-                    if (empty($included[$className])) {
-                        //var_dump($file);
-                        require $file;
-                        $new = array_diff(get_declared_traits() + get_declared_classes(), $classes);
-                        //var_dump($new);
-                        foreach ($new as $className) {
-                            $included[$className] = true;
+                        
+                        $ext = substr(basename($file), strpos(basename($file), '.') + 1);
+                        if (($ext == 'php') && (strpos($file, '.svn') === false)) {
+                            $className = substr($file, strlen($root . $srcDir . DS));
+                            $className = substr($className, 0, strrpos($className, '.php'));
+                            $className = explode('/', $className);
+                            if (count($className) > 1) {
+                                $last = array_pop($className);
+                                $prev = array_pop($className);
+                                if (ucfirst($prev) == $last) {
+                                    $className[] = $last;
+                                } else {
+                                    $className[] = $prev;
+                                    $className[] = $last;
+                                }
+                            }
+                            $className = implode('_', $className);
+                            //var_dump($className);
+                            if (empty($included[$className])) {
+                                //var_dump($file);
+                                require $file;
+                                $new = array_diff(get_declared_traits() + get_declared_classes(), $classes);
+                                //var_dump($new);
+                                foreach ($new as $className) {
+                                    $included[$className] = true;
+                                }
+                                $classes = array_merge($classes, $new);
+                            }
                         }
-                        $classes = array_merge($classes, $new);
                     }
                 }
             }
