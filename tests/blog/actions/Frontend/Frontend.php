@@ -11,6 +11,7 @@ class Frontend extends Action_HTML5
     
     public function run(){
         $this->allCategories = Category::getAll();
+        $this->title = 'Blah Blah Blah';
         parent::run();
     }
 }

@@ -259,6 +259,14 @@ final class Eve
 
     public static function autoload ($className) {
         self::startTimer('autoload');
+        
+        //dirty hack to include twig files TODO benchmark
+        /*if (strpos($className, 'Twig') === 0 ) {
+            if (is_file($file = dirname(__FILE__).'/../'.str_replace(array('_', "\0"), array('/', ''), $className).'.php')) {
+                require $file;
+            }
+        }*/
+        
         self::logEvent('autoload', $className);
         if (false && file_exists($path = self::$cacheDir . 'classes' . DS . $className . '.php')) {
             require $path;
