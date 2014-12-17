@@ -95,6 +95,8 @@ final class Eve
             $routing[$urlName] = $actionClass;
             $unrouting[$actionClass] = $urlName;
         }
+        //var_dump($routing);
+        
         if (strrpos($path, '?')) {
             $path = substr($path, 0, strrpos($path, '?'));
         }
@@ -110,25 +112,31 @@ final class Eve
                 throw new NotFoundException();
                // $className = 'Action_ShowFlatpage';
             }
+            //var_dump($className);
 
             $action = new $className();
             foreach (self::getFieldsAnnotations($className) as $field => $annotations) {
                 foreach ($annotations as $annotation) {
                     if ($annotation instanceof Param) {
                         //var_dump($annotation);
-                        $value = count($bits) > 0 ? array_shift($bits) : $annotation->default;
-                        if ($annotation->type == 'int') {
-                            $action->$field = (int) $value;
-                        } elseif ($annotation->type == 'string') {
-                            $action->$field = $value;
-                        } elseif (is_subclass_of($annotation->type, 'Entity')) {
-                            //var_dump($annotation);
-                            $action->$field = call_user_func([$annotation->value, 'getByUrlParam'], $value);
-                            if (empty($action->$field)) {
+                        if ($annotation->fullPath) {
+                            $action->$field = implode('/', $bits); 
+                            $bits = [];
+                        } else {
+                            $value = count($bits) > 0 ? array_shift($bits) : $annotation->default;
+                            if ($annotation->type == 'int') {
+                                $action->$field = (int) $value;
+                            } elseif ($annotation->type == 'string') {
+                                $action->$field = $value;
+                            } elseif (is_subclass_of($annotation->type, 'Entity')) {
+                                //var_dump($annotation);
+                                $action->$field = call_user_func([$annotation->value, 'getByUrlParam'], $value);
+                                if (empty($action->$field)) {
+                                    throw new NotFoundException();
+                                }
+                            } else {
                                 throw new NotFoundException();
                             }
-                        } else {
-                            throw new NotFoundException();
                         }
                     }
                 }
@@ -307,7 +315,7 @@ final class Eve
         return class_exists($className) || (self::getClassFileName($className) !== null);
     }
 
-    public static function find ($path) {
+    public static function findFile ($path) {
         self::startTimer('resourceloader');
         // just for windows sake
         $path = str_replace('/', DS, $path);

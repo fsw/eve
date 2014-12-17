@@ -50,11 +50,11 @@ abstract class Action_HTML5 extends Action_Http implements ArrayAccess
     }
     
     public function offsetSet ($offset, $value) {
-        throw new Exception('Action is a read-only array');
+        throw new Exception('Action have a read-only ArrayAccess');
     }
     
     public function offsetUnset ($offset) {
-        throw new Exception('Action is a read-only array');   
+        throw new Exception('Action have a read-only ArrayAccess');   
     }
     
 	protected function getStylesheetsUrls(){
@@ -81,11 +81,9 @@ abstract class Action_HTML5 extends Action_Http implements ArrayAccess
 	  parent::run();
 	  //TODO cache in production mode 
 	  $twig = new Twig_Environment(new Action_HTML5_TwigLoader(), ['cache' => false]); //'cache/twig']);
-	  //this is pretty straighforward
-	  $this->this = $this;
 	  //TODO how to hack into
 	  //template.getAttribute($object, $item, array $arguments = array(), $type = Twig_Template::ANY_CALL, $isDefinedTest = false, $ignoreStrictCheck = false)
-	  echo $twig->loadTemplate(get_class($this))->render((array)$this);
+	  echo $twig->loadTemplate(get_class($this))->render(['this' => $this]);
 	}
 	
 }

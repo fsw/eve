@@ -6,6 +6,6 @@ class Param extends Annotation {
     public $type;
     public $default;
     public $helpText;
-    
+    public $fullPath = false;
     
 }
