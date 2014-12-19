@@ -330,6 +330,10 @@ final class Eve
         return $ret;
     }
 
+    public static function getLibRoots () {
+        return static::$libRoots;
+    }
+    
     public static function findAll ($path) {
         self::startTimer('resourceloader');
         // just for windows sake
