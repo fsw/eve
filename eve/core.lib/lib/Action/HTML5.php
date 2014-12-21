@@ -5,6 +5,8 @@
  * @author fsw
  */
 
+//TODO separate this bits
+
 Eve::requireVendor('twig/lib/Twig/Autoloader.php');
 Twig_Autoloader::register();
 
@@ -42,7 +44,9 @@ abstract class Action_HTML5 extends Action_Http implements ArrayAccess
     }
     
     public function offsetGet ($offset) {
-        if (method_exists($this, 'get' . ucfirst($offset))) {
+        if (property_exists($this, $offset)) {
+            return $this->$offset;
+        } elseif (method_exists($this, 'get' . ucfirst($offset))) {
             return call_user_func([$this, 'get' . ucfirst($offset)]);
         } else {
             throw new Exception('unknow action field accessed from template ' . $offset);

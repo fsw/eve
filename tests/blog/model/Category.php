@@ -8,6 +8,9 @@ class Category extends Entity
 
     /** @Field_String(minLength=5, maxLength=256) */
     public $name;
-
+    
+    /** @Field_String(minLength=5, maxLength=256) */
+    public $slug;
+    
     public static function getPopularCategories () {}
 }

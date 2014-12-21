@@ -4,14 +4,15 @@
 class Command_Migrate extends Action_Command
 {
 
-    /** @Param(type='bool', default=false, helpText='If set, migrate will ignore
-     * current db structure and generate the create statements') */
+    /** @Param(type='bool', default=false, helpText='If set, migrate will ignore current db structure and generate the create statements') */
     public $initial;
 
-    /** @Param(type='bool', default=false, helpText='This command will ask if it
-     * shall run generated alters one by one') */
+    /** @Param(type='bool', default=false, helpText='This command will ask if it shall run generated alters one by one') */
     public $interactive;
 
+    /** @Param(type='bool', default=false, helpText='If set, this command will also generate the DROP TABLE queries') */
+    public $drop;
+    
     public function run () {
         $tables = array();
         foreach (Eve::getDescendants('Entity') as $entityClass) {
@@ -33,7 +34,7 @@ class Command_Migrate extends Action_Command
         }
         $db = new Db(Eve::setting('db'));
         $tools = new db_Tools($db);
-        $sqls = $tools->diffStructures($this->initial ? array() : $tools->getStructure(), $tables);
+        $sqls = $tools->diffStructures($this->initial ? array() : $tools->getStructure(), $tables, $this->drop);
         if (empty($sqls)) {
             print 'no differences in database found' . NL;
         } else {

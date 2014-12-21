@@ -130,7 +130,7 @@ final class Eve
                                 $action->$field = $value;
                             } elseif (is_subclass_of($annotation->type, 'Entity')) {
                                 //var_dump($annotation);
-                                $action->$field = call_user_func([$annotation->value, 'getByUrlParam'], $value);
+                                $action->$field = call_user_func([$annotation->type, 'getByUrlParam'], $value);
                                 if (empty($action->$field)) {
                                     throw new NotFoundException();
                                 }

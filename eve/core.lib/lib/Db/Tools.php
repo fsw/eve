@@ -56,7 +56,7 @@ class Db_Tools
 		return $current;
 	}
 
-	public function diffStructures($current, $target)
+	public function diffStructures($current, $target, $drop=false)
 	{
 		$sqls = [];
 		foreach ($target as $name => $fields)
@@ -118,10 +118,10 @@ class Db_Tools
 				$sqls[$name] = 'CREATE TABLE ' . $name . ' (' . PHP_EOL . implode(',' . PHP_EOL, $rows) . PHP_EOL . ') ENGINE=InnoDB DEFAULT CHARSET=utf8';
 			}
 		}
-		foreach ($current as $name => $fields)
-		{
-			//TODO
-			//$sqls[$name] = 'DROP TABLE ' . $name;
+		if ($drop) {
+		    foreach ($current as $name => $fields) {
+		        $sqls[$name] = 'DROP TABLE ' . $name;
+		    }
 		}
 		return $sqls;
 	}

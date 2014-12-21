@@ -40,7 +40,11 @@ abstract class Field extends Annotation
     public function updateWithPost ($value, $post) {
         return isset($_POST[$this->name]) ? $post[$this->name] : $value;
     }
-
+    
+    public function fromString ($string) {
+        return $string;
+    }
+    
     public function fromDbRow ($row) {
         return $row[$this->name];
     }

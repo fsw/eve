@@ -12,14 +12,24 @@ abstract class Entity
     public $id;
 
     protected $_originalRow;
+    protected $_inDatabase;
 
     public function __construct () {
         foreach (self::getFields() as $field => $annotation) {
             $this->$field = $annotation->getDefault();
         }
         $_originalRow = null;
+        $_inDatabase = false;
     }
 
+    public function updateWithArray ($data) {
+        foreach (self::getFields() as $field => $annotation) {
+            if (isset($data[$field])) {
+                $this->$field = $annotation->fromString($data[$field]);
+            }
+        }
+    }
+    
     public function __toString () {
         return empty($this->name) ? ('#' . $this->id) : $this->name;
     }
@@ -51,10 +61,9 @@ abstract class Entity
         foreach (self::getFields() as $field => $annotation) {
             $sets = array_merge($sets, $annotation->toDbRow($this->$field));
         }
-        // var_dump($sets); die();
         $this->preSave($this->_originalRow, $sets);
         
-        if ($this->id > 0) {
+        if ($this->_inDatabase) {
             self::getDb()->update(static::getTableName(), $this->id, $sets);
         } else {
             self::getDb()->insert(static::getTableName(), $sets);
@@ -78,7 +87,16 @@ abstract class Entity
                 $id
         ]);
     }
-
+    
+    public static function getByFields ($fields) {
+        // TODO request cache!!!
+        $where = [];
+        foreach ( array_keys($fields) as $key ){
+            $where[] = $key . '=?';
+        }
+        return self::getOneByQuery('WHERE ' . implode(' AND ', $where), array_values($fields));
+    }
+    
     public static function getAll () {
         return self::getManyByQuery('', []);
     }
@@ -92,6 +110,7 @@ abstract class Entity
         // var_dump($row);
         $ret = new $className();
         $ret->_originalRow = $row;
+        $ret->_inDatabase = true;
         foreach (self::getFields() as $field => $annotation) {
             // var_dump($annotation);
             $ret->$field = $annotation->fromDbRow($row);
@@ -111,6 +130,8 @@ abstract class Entity
         $ret = array();
         foreach ($rows as $row) {
             $entity = new $className();
+            $entity->_originalRow = $row;
+            $entity->_inDatabase = true;
             // var_dump($entity);
             foreach (self::getFields() as $field => $annotation) {
                 // var_dump($field);
@@ -155,7 +176,8 @@ abstract class Entity
     }
 
     public static function getPlural () {
-        return get_called_class() . 's';
+        //TODO cache forever
+        return EnglishPluralizer::pluralize(get_called_class());
     }
 
     protected static function getTableName () {

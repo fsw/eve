@@ -1,0 +1,31 @@
+[
+{
+	"class" : "Category",
+	"identify_by" : "id", 
+	"fields" : {
+		"id": 1,
+		"slug": "food",
+		"name": "Food"
+	}
+},
+{
+	"class" : "Category",
+	"identify_by" : "id", 
+	"fields" : {
+		"id": 2,
+		"parent" : 1,
+		"slug": "vegetables",
+		"name": "Vegetables"
+	}
+},
+{
+	"class" : "Category",
+	"identify_by" : "id", 
+	"fields" : {
+		"id": 3,
+		"parent" : 1,
+		"slug": "Fruits",
+		"name": "Fruits"
+	}
+}
+]
