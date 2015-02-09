@@ -1,3 +1,4 @@
 <?php
 
-class UrlName extends Annotation {}
+class UrlName extends Annotation
+{}

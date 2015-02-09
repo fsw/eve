@@ -7,7 +7,8 @@ class Frontend_Assets extends Action_Http
     /** @Param(fullPath=true) */
     public $path;
 
-    public function run () {
+    public function run()
+    {
         if (PHP_SAPI !== 'cli-server') {
             throw new Exception('Precompiled assets should be served by your webserver in production code');
         }

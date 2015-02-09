@@ -12,9 +12,11 @@ abstract class Entity
     public $id;
 
     protected $_originalRow;
+
     protected $_inDatabase;
 
-    public function __construct () {
+    public function __construct()
+    {
         foreach (self::getFields() as $field => $annotation) {
             $this->$field = $annotation->getDefault();
         }
@@ -22,41 +24,48 @@ abstract class Entity
         $_inDatabase = false;
     }
 
-    public function updateWithArray ($data) {
+    public function updateWithArray($data)
+    {
         foreach (self::getFields() as $field => $annotation) {
             if (isset($data[$field])) {
                 $this->$field = $annotation->fromString($data[$field]);
             }
         }
     }
-    
-    public function __toString () {
+
+    public function __toString()
+    {
         return empty($this->name) ? ('#' . $this->id) : $this->name;
     }
 
-    protected function preSave ($oldRow, $newRow) {}
+    protected function preSave($oldRow, $newRow)
+    {}
 
-    protected function postSave ($oldRow, $newRow) {}
+    protected function postSave($oldRow, $newRow)
+    {}
 
-    public function delete () {
+    public function delete()
+    {
         if ($this->id > 0) {
             self::getDb()->delete(static::getTableName(), $this->id);
         }
     }
-    
-    public function validate () {
+
+    public function validate()
+    {
         $errors = [];
         foreach (self::getFields() as $field => $annotation) {
             $ret = $annotation->validate($this->$field);
-            if ($ret !== true){
+            if ($ret !== true) {
                 $errors[$field] = $ret;
             }
         }
-        //TODO extra validate logic
+        // TODO extra validate logic
         return $errors;
     }
-    
-    public function save () {
+
+    public function save()
+    {
         $sets = array();
         foreach (self::getFields() as $field => $annotation) {
             $sets = array_merge($sets, $annotation->toDbRow($this->$field));
@@ -75,35 +84,35 @@ abstract class Entity
         return $this->id;
     }
 
-    public static function getByUrlParam ($param) {
-        return self::getOneByQuery('WHERE slug=?', [
-                $param
-        ]);
+    public static function getByUrlParam($param)
+    {
+        return self::getOneByQuery('WHERE slug=?', [$param]);
     }
 
-    public static function getById ($id) {
+    public static function getById($id)
+    {
         // TODO request cache!!!
-        return self::getOneByQuery('WHERE id=?', [
-                $id
-        ]);
+        return self::getOneByQuery('WHERE id=?', [$id]);
     }
-    
-    public static function getByFields ($fields) {
+
+    public static function getByFields($fields)
+    {
         // TODO request cache!!!
         $where = [];
-        foreach ( array_keys($fields) as $key ){
+        foreach (array_keys($fields) as $key) {
             $where[] = $key . '=?';
         }
         return self::getOneByQuery('WHERE ' . implode(' AND ', $where), array_values($fields));
     }
-    
-    public static function getAll () {
+
+    public static function getAll()
+    {
         return self::getManyByQuery('', []);
     }
 
-    protected static function getOneByQuery ($query, $params = []) {
-        $row = self::getDb()->fetchRow(
-                'SELECT * FROM ' . static::getTableName() . ' ' . $query, $params);
+    protected static function getOneByQuery($query, $params = [])
+    {
+        $row = self::getDb()->fetchRow('SELECT * FROM ' . static::getTableName() . ' ' . $query, $params);
         if (empty($row))
             return null;
         $className = get_called_class();
@@ -120,11 +129,10 @@ abstract class Entity
         return $ret;
     }
 
-    public static function getManyByQuery ($query, $params = []) {
+    public static function getManyByQuery($query, $params = [])
+    {
         // var_dump('ASDASD');
-        $rows = self::getDb()->fetchAll(
-                'SELECT * FROM ' . static::getTableName() . ' ' . $query, 
-                $params);
+        $rows = self::getDb()->fetchAll('SELECT * FROM ' . static::getTableName() . ' ' . $query, $params);
         // var_dump($rows);
         $className = get_called_class();
         $ret = array();
@@ -144,19 +152,23 @@ abstract class Entity
         return $ret;
     }
 
-    public static function getAdminColumns () {
+    public static function getAdminColumns()
+    {
         return array_keys(static::getFields());
     }
 
-    public static function getAdminFields () {
+    public static function getAdminFields()
+    {
         return array_keys(static::getFields());
     }
 
-    public static function getField ($key) {
+    public static function getField($key)
+    {
         return static::getFields()[$key];
     }
 
-    protected static function getFields () {
+    protected static function getFields()
+    {
         // TODO cache this!!!!
         // var_dump("ASDASDXXXX", get_called_class());
         $ret = array();
@@ -175,12 +187,14 @@ abstract class Entity
         return $ret;
     }
 
-    public static function getPlural () {
-        //TODO cache forever
+    public static function getPlural()
+    {
+        // TODO cache forever
         return EnglishPluralizer::pluralize(get_called_class());
     }
 
-    protected static function getTableName () {
+    protected static function getTableName()
+    {
         return strtolower(str_replace(' ', '_', static::getPlural()));
     }
 
@@ -189,7 +203,8 @@ abstract class Entity
     /**
      * 
      * @return Db */
-    final protected static function getDb () {
+    final protected static function getDb()
+    {
         if (empty(self::$db)) {
             self::$db = new Db(Eve::setting('db'));
         }

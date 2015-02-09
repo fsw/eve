@@ -7,7 +7,8 @@
 define('DS', DIRECTORY_SEPARATOR);
 define('NL', PHP_EOL);
 
-function __ ($str) {
+function __($str)
+{
     return $str;
 }
 
@@ -35,25 +36,25 @@ final class Eve
     private static $saveStats = true;
 
     private static $allIncluded = false;
-    
+
     private static $settings;
 
-    public static function init ($modules, $settings = []) {
+    public static function init($modules, $settings = [])
+    {
         self::startTimer('other');
         // TODO move to Eve?
-        /*if (PHP_SAPI !== 'cli') {
-            session_start();
-        }*/
-        //self::setCacheDir($cachePath);
+        /* if (PHP_SAPI !== 'cli') {
+         * session_start();
+         * } */
+        // self::setCacheDir($cachePath);
         $eveRoot = dirname(__FILE__) . DS;
         
         foreach (array_reverse($modules) as $lib) {
-            if (strrpos($lib, '/', -strlen($lib)) !== FALSE ) {
+            if (strrpos($lib, '/', - strlen($lib)) !== FALSE) {
                 self::$libRoots[] = $lib . DS;
             } else {
                 self::$libRoots[] = $eveRoot . $lib . DS;
             }
-            
         }
         self::$libRoots[] = $eveRoot . 'core.lib' . DS;
         
@@ -79,13 +80,15 @@ final class Eve
          * array_walk_recursive($_REQUEST, 'stripslashes_gpc');
          * } */
     }
-    
-    public static function setting($key) {
+
+    public static function setting($key)
+    {
         return self::$settings[$key];
     }
-    
-    public static function executeRequest ($path) {
-        foreach (Eve::getDescendants ('Action_Http') as $actionClass) {
+
+    public static function executeRequest($path)
+    {
+        foreach (Eve::getDescendants('Action_Http') as $actionClass) {
             $urlName = lcfirst(str_replace('Action_', '', $actionClass));
             foreach (self::getClassAnnotations($actionClass) as $annotation) {
                 if ($annotation instanceof UrlName) {
@@ -95,7 +98,7 @@ final class Eve
             $routing[$urlName] = $actionClass;
             $unrouting[$actionClass] = $urlName;
         }
-        //var_dump($routing);
+        // var_dump($routing);
         
         if (strrpos($path, '?')) {
             $path = substr($path, 0, strrpos($path, '?'));
@@ -110,17 +113,17 @@ final class Eve
                 $className = $routing[array_shift($bits)];
             } else {
                 throw new NotFoundException();
-               // $className = 'Action_ShowFlatpage';
+                // $className = 'Action_ShowFlatpage';
             }
-            //var_dump($className);
-
+            // var_dump($className);
+            
             $action = new $className();
             foreach (self::getFieldsAnnotations($className) as $field => $annotations) {
                 foreach ($annotations as $annotation) {
                     if ($annotation instanceof Param) {
-                        //var_dump($annotation);
+                        // var_dump($annotation);
                         if ($annotation->fullPath) {
-                            $action->$field = implode('/', $bits); 
+                            $action->$field = implode('/', $bits);
                             $bits = [];
                         } else {
                             $value = count($bits) > 0 ? array_shift($bits) : $annotation->default;
@@ -129,7 +132,7 @@ final class Eve
                             } elseif ($annotation->type == 'string') {
                                 $action->$field = $value;
                             } elseif (is_subclass_of($annotation->type, 'Entity')) {
-                                //var_dump($annotation);
+                                // var_dump($annotation);
                                 $action->$field = call_user_func([$annotation->type, 'getByUrlParam'], $value);
                                 if (empty($action->$field)) {
                                     throw new NotFoundException();
@@ -141,30 +144,31 @@ final class Eve
                     }
                 }
             }
-            //var_dump($className, $bits, $routing);
-            if (!empty($bits)) {
+            // var_dump($className, $bits, $routing);
+            if (! empty($bits)) {
                 throw new NotFoundException();
             }
-    
+            
             $action->run();
         } catch (NotFoundException $e) {
             (new Exception404())->run();
         }
         // echo $path;
     }
-    
-    public static function executeCliCommand ($argv) {
+
+    public static function executeCliCommand($argv)
+    {
         $scriptName = array_shift($argv);
         $actions = [];
-        foreach (Eve::getDescendants ('Action_Command') as $actionClass) {
+        foreach (Eve::getDescendants('Action_Command') as $actionClass) {
             $actions[$actionClass::getShortName()] = $actionClass;
         }
         $actionName = array_shift($argv);
-        if (empty($actionName) || !isset($actions[$actionName])) {
+        if (empty($actionName) || ! isset($actions[$actionName])) {
             print "usage:\n";
             print "$ php $scriptName <action> [parameters...]\n";
             print "available actions:\n";
-            foreach ($actions as $actionClass){
+            foreach ($actions as $actionClass) {
                 print $actionClass::getShortHelp();
             }
         } else {
@@ -172,69 +176,74 @@ final class Eve
             $action->executeByArgv($argv);
         }
     }
-    
-    public static function run ($modules, $settings) {
-        Eve::init ($modules, $settings);
-        //TODO case cli / built-in server / production mode
+
+    public static function run($modules, $settings)
+    {
+        Eve::init($modules, $settings);
+        // TODO case cli / built-in server / production mode
         if (PHP_SAPI === 'cli') {
             global $argv;
-            //script name
-            Eve::executeCliCommand ($argv);
+            // script name
+            Eve::executeCliCommand($argv);
         } elseif (PHP_SAPI === 'cli-server') {
-            Eve::executeRequest ($_SERVER["REQUEST_URI"]);
+            Eve::executeRequest($_SERVER["REQUEST_URI"]);
         } else {
-            Eve::executeRequest ($_SERVER["REQUEST_URI"]);
+            Eve::executeRequest($_SERVER["REQUEST_URI"]);
         }
     }
 
-    function async ($function) {
+    function async($function)
+    {
         $args = func_get_args();
     }
 
-    public static function getStats () {
-            $ret = $_SESSION['stats'];
-            $_SESSION['stats'] = [];
-            self::$saveStats = false;
-            return $ret;
+    public static function getStats()
+    {
+        $ret = $_SESSION['stats'];
+        $_SESSION['stats'] = [];
+        self::$saveStats = false;
+        return $ret;
     }
 
-    public static function shutdown () {
+    public static function shutdown()
+    {
         self::stopTimer();
         if (self::$saveStats) {
             if (empty($_SESSION['stats'])) {
                 $_SESSION['stats'] = [];
             }
-            $_SESSION['stats'][empty($_SERVER['REQUEST_URI']) ? 0 : $_SERVER['REQUEST_URI']] = [
-                    self::$timeStats,
-                    self::$memStats,
-                    self::$events
-            ];
+            $_SESSION['stats'][empty($_SERVER['REQUEST_URI']) ? 0 : $_SERVER['REQUEST_URI']] = [self::$timeStats, 
+                    self::$memStats, self::$events];
         }
     }
 
-    public static function requireVendor ($file) {
+    public static function requireVendor($file)
+    {
         require_once static::$vendorRoot . $file;
     }
 
-    public static function getCacheDir () {
+    public static function getCacheDir()
+    {
         return self::$cacheDir;
     }
 
-    public static function setCacheDir ($path) {
+    public static function setCacheDir($path)
+    {
         self::$cacheDir = $path . DS;
     }
 
-    public static function stackException (Exception $e) {
+    public static function stackException(Exception $e)
+    {
         self::$exception = $e;
     }
 
-    public static function stackedException () {
+    public static function stackedException()
+    {
         return self::$exception;
     }
 
-
-
-    public static function getClassAnnotations ($className) {
+    public static function getClassAnnotations($className)
+    {
         // WAITING FOR:
         // https://wiki.php.net/rfc/annotations
         static::requireVendor('addendum' . DS . 'annotations.php');
@@ -242,7 +251,8 @@ final class Eve
         return $reflection->getAllAnnotations();
     }
 
-    public static function getFieldsAnnotations ($className) {
+    public static function getFieldsAnnotations($className)
+    {
         // TODO apc
         $return = array();
         // WAITING FOR:
@@ -265,15 +275,17 @@ final class Eve
         return $return;
     }
 
-    public static function autoload ($className) {
+    public static function autoload($className)
+    {
         self::startTimer('autoload');
         
-        //dirty hack to include twig files TODO benchmark
-        /*if (strpos($className, 'Twig') === 0 ) {
-            if (is_file($file = dirname(__FILE__).'/../'.str_replace(array('_', "\0"), array('/', ''), $className).'.php')) {
-                require $file;
-            }
-        }*/
+        // dirty hack to include twig files TODO benchmark
+        /* if (strpos($className, 'Twig') === 0 ) {
+         * if (is_file($file = dirname(__FILE__).'/../'.str_replace(array('_',
+         * "\0"), array('/', ''), $className).'.php')) {
+         * require $file;
+         * }
+         * } */
         
         self::logEvent('autoload', $className);
         if (false && file_exists($path = self::$cacheDir . 'classes' . DS . $className . '.php')) {
@@ -291,18 +303,20 @@ final class Eve
         self::stopTimer();
     }
 
-    public static function getClassFileName ($className) {
-        //var_dump($className);
+    public static function getClassFileName($className)
+    {
+        // var_dump($className);
         $path = explode('_', $className);
         $baseName = array_pop($path);
         $path = implode(DS, $path);
         foreach (static::$libRoots as $root) {
             foreach (['actions', 'model', 'lib'] as $srcDir) {
                 $searchFiles[] = $root . $srcDir . DS . (empty($path) ? '' : $path . DS) . $baseName . '.php';
-                $searchFiles[] = $root . $srcDir . DS . (empty($path) ? '' : $path . DS) . $baseName . DS . $baseName . '.php';
+                $searchFiles[] = $root . $srcDir . DS . (empty($path) ? '' : $path . DS) . $baseName . DS . $baseName .
+                         '.php';
             }
         }
-        //var_dump($searchFiles);
+        // var_dump($searchFiles);
         foreach ($searchFiles as $file) {
             if (file_exists($file)) {
                 return $file;
@@ -311,11 +325,13 @@ final class Eve
         return null;
     }
 
-    public static function classExists ($className) {
+    public static function classExists($className)
+    {
         return class_exists($className) || (self::getClassFileName($className) !== null);
     }
 
-    public static function findFile ($path) {
+    public static function findFile($path)
+    {
         self::startTimer('resourceloader');
         // just for windows sake
         $path = str_replace('/', DS, $path);
@@ -330,11 +346,13 @@ final class Eve
         return $ret;
     }
 
-    public static function getLibRoots () {
+    public static function getLibRoots()
+    {
         return static::$libRoots;
     }
-    
-    public static function findAll ($path) {
+
+    public static function findAll($path)
+    {
         self::startTimer('resourceloader');
         // just for windows sake
         $path = str_replace('/', DS, $path);
@@ -348,7 +366,8 @@ final class Eve
         return $ret;
     }
 
-    public static function listDir ($path) {
+    public static function listDir($path)
+    {
         self::startTimer('resourceloader');
         // just for windows sake
         $path = str_replace('/', DS, $path);
@@ -365,7 +384,8 @@ final class Eve
         return array_keys($ret);
     }
 
-    private static function includeAll () {
+    private static function includeAll()
+    {
         if (static::$allIncluded) {
             return true;
         }
@@ -379,7 +399,7 @@ final class Eve
             foreach (['actions', 'model', 'lib'] as $srcDir) {
                 if (Fs::exists($root . $srcDir)) {
                     $files = Fs::listFiles($root . $srcDir, true, true);
-                    //var_dump($root, $files);
+                    // var_dump($root, $files);
                     foreach ($files as $file) {
                         $relative = substr($file, strlen($root . $srcDir . DS));
                         if (strpos($relative, '_') === 0) {
@@ -402,12 +422,12 @@ final class Eve
                                 }
                             }
                             $className = implode('_', $className);
-                            //var_dump($className);
+                            // var_dump($className);
                             if (empty($included[$className])) {
-                                //var_dump($file);
+                                // var_dump($file);
                                 require $file;
                                 $new = array_diff(get_declared_traits() + get_declared_classes(), $classes);
-                                //var_dump($new);
+                                // var_dump($new);
                                 foreach ($new as $className) {
                                     $included[$className] = true;
                                 }
@@ -420,7 +440,8 @@ final class Eve
         }
     }
 
-    public static function getDescendants ($class) {
+    public static function getDescendants($class)
+    {
         self::startTimer('classtools');
         $ret = Cache_Apc::get('descendants/' . $class);
         if ($ret === null) {
@@ -440,40 +461,39 @@ final class Eve
         return $ret;
     }
 
-    public static function startTimer ($key) {
-            if (empty(self::$startTime)) {
-                self::$startTime = microtime(true);
-            }
-            array_push(self::$timers, [
-                    $key,
-                    microtime(true),
-                    memory_get_usage(true)
-            ]);
-            if (! isset(self::$timeStats[$key])) {
-                self::$timeStats[$key] = 0;
-                self::$memStats[$key] = 0;
-            }
+    public static function startTimer($key)
+    {
+        if (empty(self::$startTime)) {
+            self::$startTime = microtime(true);
+        }
+        array_push(self::$timers, [$key, microtime(true), memory_get_usage(true)]);
+        if (! isset(self::$timeStats[$key])) {
+            self::$timeStats[$key] = 0;
+            self::$memStats[$key] = 0;
+        }
     }
 
-    public static function stopTimer () {
-            list ($key, $time, $memory) = array_pop(self::$timers);
-            $time = microtime(true) - $time;
-            $memory = memory_get_usage(true) - $memory;
-            
-            self::$timeStats[$key] += $time;
-            self::$memStats[$key] += $memory;
-            
-            foreach (self::$timers as &$timer) {
-                $timer[1] += $time;
-                $timer[2] += $memory;
-            }
+    public static function stopTimer()
+    {
+        list($key, $time, $memory) = array_pop(self::$timers);
+        $time = microtime(true) - $time;
+        $memory = memory_get_usage(true) - $memory;
+        
+        self::$timeStats[$key] += $time;
+        self::$memStats[$key] += $memory;
+        
+        foreach (self::$timers as &$timer) {
+            $timer[1] += $time;
+            $timer[2] += $memory;
+        }
     }
 
-    public static function logEvent ($class) {
-            $args = func_get_args();
-            array_shift($args);
-            $start_time = microtime(true) - self::$startTime;
-            array_unshift($args, $start_time);
-            self::$events[$class][] = $args;
+    public static function logEvent($class)
+    {
+        $args = func_get_args();
+        array_shift($args);
+        $start_time = microtime(true) - self::$startTime;
+        array_unshift($args, $start_time);
+        self::$events[$class][] = $args;
     }
 }

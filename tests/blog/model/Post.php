@@ -2,7 +2,7 @@
 
 class Post extends Entity
 {
-
+    
     use Entity_ContentTrait;
     
     use Entity_VersionableTrait;
@@ -16,18 +16,18 @@ class Post extends Entity
     /** @Field_DateTime(default='now') */
     public $created;
 
-    public static function getNewest ($page = 1) {
+    public static function getNewest($page = 1)
+    {
         return static::getManyByQuery('ORDER BY created DESC LIMIT 10');
     }
 
-    public function postAdd () {
-        Eve::async([
-        'Post',
-        'postToFacebookAboutNewPost'
-                ], $this->id, 5000);
+    public function postAdd()
+    {
+        Eve::async(['Post', 'postToFacebookAboutNewPost'], $this->id, 5000);
     }
 
-    public function postToFacebookAboutNewPost ($id) {
+    public function postToFacebookAboutNewPost($id)
+    {
         $post = static::getById($id);
         // some fancy logic here
     }

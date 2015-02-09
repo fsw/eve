@@ -1,8 +1,4 @@
 <?php
 
-
-
-class Entity_Exception extends Exception {
-
-
-}
+class Entity_Exception extends Exception
+{}

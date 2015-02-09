@@ -1,3 +1,4 @@
 <?php
 
-class Field_Postcode extends Field {}
+class Field_Postcode extends Field
+{}

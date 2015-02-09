@@ -2,14 +2,17 @@
 
 class Field_Text extends Field
 {
-        public function getFormInput($value){
-		return '<textarea id="' . $this->name . '" name="' . $this->name . '" class="form-control input-md"'. ( $this->isRequired() ? ' required=""' : '').'>' . $value . '</textarea>';
-        }
-        
-        public function getDbDefinition()
-	{
-		return [$this->name => 'text'];
-	}
+
+    public function getFormInput($value)
+    {
+        return '<textarea id="' . $this->name . '" name="' . $this->name . '" class="form-control input-md"' .
+                 ($this->isRequired() ? ' required=""' : '') . '>' . $value . '</textarea>';
+    }
+
+    public function getDbDefinition()
+    {
+        return [$this->name => 'text'];
+    }
 }
 
 /*

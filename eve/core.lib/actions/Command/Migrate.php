@@ -4,16 +4,20 @@
 class Command_Migrate extends Action_Command
 {
 
-    /** @Param(type='bool', default=false, helpText='If set, migrate will ignore current db structure and generate the create statements') */
+    /** @Param(type='bool', default=false, helpText='If set, migrate will ignore
+     * current db structure and generate the create statements') */
     public $initial;
 
-    /** @Param(type='bool', default=false, helpText='This command will ask if it shall run generated alters one by one') */
+    /** @Param(type='bool', default=false, helpText='This command will ask if it
+     * shall run generated alters one by one') */
     public $interactive;
 
-    /** @Param(type='bool', default=false, helpText='If set, this command will also generate the DROP TABLE queries') */
+    /** @Param(type='bool', default=false, helpText='If set, this command will
+     * also generate the DROP TABLE queries') */
     public $drop;
-    
-    public function run () {
+
+    public function run()
+    {
         $tables = array();
         foreach (Eve::getDescendants('Entity') as $entityClass) {
             $method = new ReflectionMethod($entityClass, 'getFields');
@@ -45,7 +49,7 @@ class Command_Migrate extends Action_Command
                 print $sql;
                 if ($this->interactive) {
                     print 'Do you want to run this query now[y/n]?' . NL;
-                    if ($this->readChar() == 'y'){
+                    if ($this->readChar() == 'y') {
                         print 'RUNNING' . NL;
                         $db->query($sql);
                     }

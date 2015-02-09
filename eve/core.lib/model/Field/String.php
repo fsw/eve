@@ -9,7 +9,8 @@ class Field_String extends Field
 
     public $suggestedChoices;
 
-    public function getFormInput ($value) {
+    public function getFormInput($value)
+    {
         $ret = "";
         if (! empty($this->suggestedChoices)) {
             $ret .= '<select name="' . $this->name . '_sugg" class="form-control input-md suggestions"' .
@@ -32,7 +33,8 @@ class Field_String extends Field
                  '" placeholder="" class="form-control input-md"' . ($this->isRequired() ? ' required=""' : '') . '>';
     }
 
-    public function validate ($value) {
+    public function validate($value)
+    {
         $errors = parent::validate($value);
         if ($this->minLength && strlen($value) < $this->minLength) {
             $errors[] = sprintf('minimum %d characters', $this->minLength);

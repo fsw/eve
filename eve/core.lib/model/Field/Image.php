@@ -15,14 +15,14 @@ class Image implements JsonSerializable
 
     private $alt;
 
-    public function jsonSerialize () {
-        return [
-                'thumb' => $this->getSrc($this->sizes[count($this->sizes) - 1]),
-                'image' => $this->getSrc($this->sizes[0])
-        ];
+    public function jsonSerialize()
+    {
+        return ['thumb' => $this->getSrc($this->sizes[count($this->sizes) - 1]), 
+                'image' => $this->getSrc($this->sizes[0])];
     }
 
-    function __construct ($entity, $name, $id, $ext, $sizes, $alt = '') {
+    function __construct($entity, $name, $id, $ext, $sizes, $alt = '')
+    {
         $this->entity = $entity;
         $this->name = $name;
         $this->id = $id;
@@ -32,37 +32,45 @@ class Image implements JsonSerializable
         $this->alt = $alt;
     }
 
-    function getId () {
+    function getId()
+    {
         return $this->id;
     }
 
-    function isEmpty () {
+    function isEmpty()
+    {
         return empty($this->id);
     }
 
-    function getExt () {
+    function getExt()
+    {
         return $this->ext;
     }
 
-    function getAlt () {
+    function getAlt()
+    {
         return htmlspecialchars($this->alt);
     }
 
-    function getImg ($size) {
+    function getImg($size)
+    {
         if ($size == 'original') {
             return '<img src="' . $this->getSrc($size) . '" alt="' . $this->getAlt() . '"/>';
         } else {
-            list ($width, $height) = split('x', $size);
-            return '<img src="' . $this->getSrc($size) . '" width="' . $width . '" height="' . $height . '" alt="' . $this->getAlt() . '"/>';
+            list($width, $height) = split('x', $size);
+            return '<img src="' . $this->getSrc($size) . '" width="' . $width . '" height="' . $height . '" alt="' .
+                     $this->getAlt() . '"/>';
         }
     }
 
-    function getSrc ($size) {
+    function getSrc($size)
+    {
         return EVE_UPLOADS_URL . $this->entity . '/' . $this->name . '_' . sprintf('%04d', $this->id) . '_' . $size . '.' .
                  $this->ext;
     }
 
-    function __toString () {
+    function __toString()
+    {
         return $this->getImg($this->sizes[count($this->sizes) - 1]);
     }
 }
@@ -74,26 +82,25 @@ class Field_Image extends Field
 
     public $format;
 
-    public function updateWithPost ($value, $post) {
+    public function updateWithPost($value, $post)
+    {
         $new_id = $value->getId();
         $output_format = $value->getExt();
         if (! empty($_FILES[$this->name]['error'])) {
             if (! empty($post[$this->name . '_delete']) && ($post[$this->name . '_delete'] == 'delete')) {
-                return new Image($this->entity, $this->name, 0, 'jpg',
-                        array(
-                                'original'
-                        ));
+                return new Image($this->entity, $this->name, 0, 'jpg', array('original'));
             }
-            return new Image($this->entity, $this->name, $new_id, $output_format, $this->sizes, $post[$this->name . '_alt']);
-            //throw new Field_Exception($this->name, "Sorry no bonus here");
+            return new Image($this->entity, $this->name, $new_id, $output_format, $this->sizes, 
+                    $post[$this->name . '_alt']);
+            // throw new Field_Exception($this->name, "Sorry no bonus here");
         }
-        if (!empty($_FILES[$this->name]['tmp_name'])) {   
+        if (! empty($_FILES[$this->name]['tmp_name'])) {
             $tmp_path = $_FILES[$this->name]['tmp_name'];
             if (($tmp_info = getimagesize($tmp_path)) === false) {
                 throw new Field_Exception($this->name, "File type seems invalid (allowed types are jpg, png, gif)");
             }
             
-            list ($originalWidth, $originalHeight, $type, $attr) = $tmp_info;
+            list($originalWidth, $originalHeight, $type, $attr) = $tmp_info;
             switch ($type) {
                 case IMAGETYPE_GIF:
                     $src_img = imagecreatefromgif($tmp_path);
@@ -129,9 +136,10 @@ class Field_Image extends Field
                     $width = $originalWidth;
                     $height = $originalHeight;
                 } else {
-                    list ($width, $height) = split('x', $out_size);
+                    list($width, $height) = split('x', $out_size);
                 }
-                // var_dump($output_sizes, $output_format, $width, $height); die();
+                // var_dump($output_sizes, $output_format, $width, $height);
+                // die();
                 
                 $new_img = imagecreatetruecolor($width, $height);
                 
@@ -143,14 +151,13 @@ class Field_Image extends Field
                     $cropTop = ($originalHeight - ($height * ($originalWidth / $width))) / 2;
                     $cropLeft = 0;
                 }
-                // TODO method FIT                
+                // TODO method FIT
                 imagecopyresampled($new_img, $src_img, 0, 0, $cropLeft, $cropTop, $width, $height, 
                         $originalWidth - (2 * $cropLeft), $originalHeight - (2 * $cropTop));
                 
                 $new_path = EVE_UPLOADS_ROOT . $this->entity . '/' . $this->name . '_' . sprintf('%04d', $new_id) . '_' .
                          $out_size;
                 mkdir(dirname($new_path), 0755, true);
-                
                 
                 switch ($output_format) {
                     case 'gif':
@@ -168,32 +175,29 @@ class Field_Image extends Field
         return new Image($this->entity, $this->name, $new_id, $output_format, $this->sizes, $post[$this->name . '_alt']);
     }
 
-    public function getDefault () {
-        return new Image($this->entity, $this->name, 0, 'jpg', array(
-                'original'
-        ));
+    public function getDefault()
+    {
+        return new Image($this->entity, $this->name, 0, 'jpg', array('original'));
     }
 
-    public function fromDbRow ($row) {
+    public function fromDbRow($row)
+    {
         return new Image($this->entity, $this->name, $row[$this->name], 
-                ($this->format == 'original') ? $row[$this->name . '_ext'] : $this->format, $this->sizes, $row[$this->name . '_alt']);
+                ($this->format == 'original') ? $row[$this->name . '_ext'] : $this->format, $this->sizes, 
+                $row[$this->name . '_alt']);
     }
 
-    public function toDbRow ($value) {
+    public function toDbRow($value)
+    {
         if ($this->format == 'original') {
-            return [
-                    $this->name => $value->getId(),
-                    $this->name . '_alt' => $value->getAlt(),
-                    $this->name . '_ext' => $value->getExt()
-            ];
+            return [$this->name => $value->getId(), $this->name . '_alt' => $value->getAlt(), 
+                    $this->name . '_ext' => $value->getExt()];
         }
-        return [
-                $this->name => $value->getId(),
-                $this->name . '_alt' => $value->getAlt()
-        ];
+        return [$this->name => $value->getId(), $this->name . '_alt' => $value->getAlt()];
     }
 
-    public function getFormInput ($value) {
+    public function getFormInput($value)
+    {
         $ret = '<div class="clearfix">';
         $ret .= '<img class="pull-left" style="margin-right:40px;" src="' . $value->getSrc('20x20') .
                  '" width="20" height="20"/>';
@@ -205,18 +209,13 @@ class Field_Image extends Field
         return $ret;
     }
 
-    public function getDbDefinition () {
+    public function getDbDefinition()
+    {
         if ($this->format == 'original') {
-            return [
-                    $this->name => 'int(11) NOT NULL',
-                    $this->name . '_ext' => 'char(3) NOT NULL',
-                    $this->name . '_alt' => 'varchar(255) DEFAULT NULL'
-            ];
+            return [$this->name => 'int(11) NOT NULL', $this->name . '_ext' => 'char(3) NOT NULL', 
+                    $this->name . '_alt' => 'varchar(255) DEFAULT NULL'];
         } else {
-            return [
-                    $this->name => 'int(11) NOT NULL',
-                    $this->name . '_alt' => 'varchar(255) DEFAULT NULL'
-            ];
+            return [$this->name => 'int(11) NOT NULL', $this->name . '_alt' => 'varchar(255) DEFAULT NULL'];
         }
     }
 }

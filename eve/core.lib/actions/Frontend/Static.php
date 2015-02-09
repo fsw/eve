@@ -6,8 +6,9 @@ class Frontend_Static extends Action_Http
 
     /** @Param(fullPath=true) */
     public $path;
-    
-    public function run () {
+
+    public function run()
+    {
         if (PHP_SAPI !== 'cli-server') {
             throw new Exception('Static files should be served by your webserver in production code');
         }

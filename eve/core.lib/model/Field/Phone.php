@@ -1,3 +1,4 @@
 <?php
 
-class Field_Phone extends Field {}
+class Field_Phone extends Field
+{}

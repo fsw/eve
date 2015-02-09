@@ -11,7 +11,8 @@ class Action_AdminEntityCRUD extends Action_Admin
     /** @Param(type='int', default=0) */
     public $id;
 
-    public function run () {
+    public function run()
+    {
         parent::run();
     }
 }

@@ -7,7 +7,8 @@ class Field_Exception extends Exception
 
     public $message;
 
-    public function __construct ($key, $message) {
+    public function __construct($key, $message)
+    {
         $this->key = $key;
         $this->message = $message;
     }

@@ -4,16 +4,19 @@
 class Command_Load extends Action_Command
 {
 
-    /** @Param(type='string', helpText='Name of the fixture file to load. Command will search available libs roots for "fixtures/<fixture>.json file') */
+    /** @Param(type='string', helpText='Name of the fixture file to load.
+     * Command will search available libs roots for "fixtures/<fixture>.json
+     * file') */
     public $fixture;
 
-    public function run () {
+    public function run()
+    {
         $path = 'fixtures' . DS . $this->fixture . '.json';
         $realPath = Eve::findFile($path);
         if ($realPath === null) {
             throw new Exception('Can\'t find fixture file ' . $path);
         }
-        //TODO handle JSON exceptions
+        // TODO handle JSON exceptions
         $data = json_decode(file_get_contents($realPath), true);
         
         $added = 0;
@@ -23,7 +26,7 @@ class Command_Load extends Action_Command
         foreach ($data as $row) {
             $entityClass = $row['class'];
             $fields = $row['fields'];
-            //var_dump($row);
+            // var_dump($row);
             if ($row['identify_by']) {
                 $getByFields = [];
                 foreach (explode(',', $row['identify_by']) as $field) {
@@ -36,11 +39,11 @@ class Command_Load extends Action_Command
                     $new = new $entityClass();
                     $new->updateWithArray($fields);
                     var_dump($new);
-                    //TODO $entityClass::getFields();
+                    // TODO $entityClass::getFields();
                     $new->save();
                 } else {
                     $current->updateWithArray($fields);
-                    //update
+                    // update
                     print '!';
                     $updated ++;
                     $current->save();

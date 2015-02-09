@@ -8,28 +8,33 @@
 abstract class Action_Http extends Action
 {
 
-    protected function post ($post) {
+    protected function post($post)
+    {
         // TODO 404 here?
     }
 
-    public function run () {
+    public function run()
+    {
         if (! empty($_POST)) {
             $this->post($_POST);
         }
         // die('override me');
     }
 
-    protected function redirectTo ($url) {
+    protected function redirectTo($url)
+    {
         header('Location: ' . $url);
         exit();
     }
 
-    protected function redirectToWithReferer ($url) {
+    protected function redirectToWithReferer($url)
+    {
         header('Location: ' . $url . '?ref=' . urlencode($_SERVER["REQUEST_URI"]));
         exit();
     }
 
-    protected function redirectBack ($default = '/') {
+    protected function redirectBack($default = '/')
+    {
         if (! empty($_GET['ref'])) {
             $default = $_GET['ref'];
         }
@@ -37,7 +42,8 @@ abstract class Action_Http extends Action
         exit();
     }
 
-    public static function lt ($args = []) {
+    public static function lt($args = [])
+    {
         $args = func_get_args();
         
         $name = '/' . lcfirst(str_replace('Action_', '', get_called_class()));

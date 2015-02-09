@@ -3,15 +3,18 @@
 class Field_Id extends Field
 {
 
-    public function updateWithPost ($value, $post) {
+    public function updateWithPost($value, $post)
+    {
         return $value;
     }
 
-    public function toDbRow ($value) {
+    public function toDbRow($value)
+    {
         return [];
     }
 
-    public function hasFormInput () {
+    public function hasFormInput()
+    {
         return false;
     }
 
@@ -19,9 +22,8 @@ class Field_Id extends Field
      * return '<div class="form-control"><input type="hidden" name="' .
      * $this->name . '" value="' . $value . '" />#' . $value . '</div>';
      * } */
-    public function getDbDefinition () {
-        return [
-                $this->name => 'int(11) NOT NULL AUTO_INCREMENT'
-        ];
+    public function getDbDefinition()
+    {
+        return [$this->name => 'int(11) NOT NULL AUTO_INCREMENT'];
     }
 }
