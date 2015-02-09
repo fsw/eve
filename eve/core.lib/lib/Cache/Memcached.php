@@ -6,7 +6,7 @@
  * @package Core
  * @author fsw
  */
-class Cache_Memcached
+class Cache_Memcached implements Cache_ICache
 {
 
     private static $connection = null;
@@ -20,7 +20,7 @@ class Cache_Memcached
         return $connection;
     }
 
-    public static function set($key, $value)
+    public static function set($key, $value, $ttl = 60)
     {
         Eve::startTimer('memcached');
         if (Eve::useCache('memcached')) {

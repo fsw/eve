@@ -6,7 +6,7 @@
  * @package Core
  * @author fsw
  */
-class Cache_Apc
+class Cache_Apc implements Cache_ICache
 {
 
     public static function set($key, $value, $ttl = 60)

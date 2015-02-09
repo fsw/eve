@@ -15,56 +15,64 @@ function __($str)
 final class Eve
 {
 
+    private static $appRoot = '';
+    private static $eveRoot = '';
+    private static $vendorRoot = '';
     private static $cacheDir = '';
 
-    private static $libRoots = array();
-
-    private static $vendorRoot;
+    private static $libRoots = [];
 
     private static $exception = null;
     // statistics:
     private static $timers = array();
-
     private static $startTime = 0;
-
     private static $timeStats = array();
-
     private static $memStats = array();
-
     private static $events = array();
-
     private static $saveStats = true;
-
     private static $allIncluded = false;
 
     private static $settings;
 
-    public static function init($modules, $settings = [])
+    /** @Cache_Apc */
+    public static function config($section)
     {
+        $config = Cache_Apc::get('config');
+        if ($config === null) {
+            $config = parse_ini_file(self::$appRoot . DS . 'config.ini', true);
+            //var_dump($config);
+            //TODO load configs from libs
+            Cache_Apc::set('config', $config);
+        }
+        return $config[$section];
+    }
+    
+    public static function init($root)
+    {
+        spl_autoload_register(['Eve', 'autoload']);
+        self::$appRoot = $root . DS;
+        self::$eveRoot = dirname(__FILE__) . DS;
+        self::$libRoots[] = self::$eveRoot . 'core.lib' . DS;
+        
         self::startTimer('other');
         // TODO move to Eve?
         /* if (PHP_SAPI !== 'cli') {
          * session_start();
          * } */
         // self::setCacheDir($cachePath);
-        $eveRoot = dirname(__FILE__) . DS;
-        
-        foreach (array_reverse($modules) as $lib) {
+        foreach (Eve::config('libs')['libs'] as $lib) {
             if (strrpos($lib, '/', - strlen($lib)) !== FALSE) {
                 self::$libRoots[] = $lib . DS;
             } else {
-                self::$libRoots[] = $eveRoot . $lib . DS;
+                self::$libRoots[] = self::$eveRoot . $lib . DS;
             }
         }
-        self::$libRoots[] = $eveRoot . 'core.lib' . DS;
+        self::$libRoots[] = self::$appRoot;
+        self::$libRoots = array_reverse(self::$libRoots);
         
-        spl_autoload_register(['Eve', 'autoload']);
-        
-        self::$vendorRoot = $eveRoot . 'vendor' . DS;
+        self::$vendorRoot = self::$eveRoot . 'vendor' . DS;
         
         register_shutdown_function(['Eve', 'shutdown']);
-        
-        self::$settings = $settings;
         
         // self::$errorHandler = new ErrorHandler();
         // TODO
@@ -79,11 +87,6 @@ final class Eve
          * array_walk_recursive($_COOKIE, 'stripslashes_gpc');
          * array_walk_recursive($_REQUEST, 'stripslashes_gpc');
          * } */
-    }
-
-    public static function setting($key)
-    {
-        return self::$settings[$key];
     }
 
     public static function executeRequest($path)
@@ -177,9 +180,9 @@ final class Eve
         }
     }
 
-    public static function run($modules, $settings)
+    public static function run($root)
     {
-        Eve::init($modules, $settings);
+        Eve::init($root);
         // TODO case cli / built-in server / production mode
         if (PHP_SAPI === 'cli') {
             global $argv;
@@ -309,6 +312,7 @@ final class Eve
         $path = explode('_', $className);
         $baseName = array_pop($path);
         $path = implode(DS, $path);
+        
         foreach (static::$libRoots as $root) {
             foreach (['actions', 'model', 'lib'] as $srcDir) {
                 $searchFiles[] = $root . $srcDir . DS . (empty($path) ? '' : $path . DS) . $baseName . '.php';
@@ -391,10 +395,7 @@ final class Eve
         }
         static::$allIncluded = true;
         static::requireVendor('addendum' . DS . 'annotations.php');
-        $included = array();
-        foreach ($classes = get_declared_traits() + get_declared_classes() as $class) {
-            $included[$class] = true;
-        }
+        $includedClasses = array_merge(get_declared_traits(), get_declared_classes(), get_declared_interfaces());
         foreach (static::$libRoots as $root) {
             foreach (['actions', 'model', 'lib'] as $srcDir) {
                 if (Fs::exists($root . $srcDir)) {
@@ -422,16 +423,10 @@ final class Eve
                                 }
                             }
                             $className = implode('_', $className);
-                            // var_dump($className);
-                            if (empty($included[$className])) {
+                            if (!in_array($className, $includedClasses)) {
                                 // var_dump($file);
                                 require $file;
-                                $new = array_diff(get_declared_traits() + get_declared_classes(), $classes);
-                                // var_dump($new);
-                                foreach ($new as $className) {
-                                    $included[$className] = true;
-                                }
-                                $classes = array_merge($classes, $new);
+                                $includedClasses = array_merge(get_declared_traits(), get_declared_classes(), get_declared_interfaces());
                             }
                         }
                     }

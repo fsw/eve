@@ -11,5 +11,4 @@
  */
 require_once (__DIR__ . '/../../eve/Eve.php');
 
-Eve::run(['auth.lib', 'admin.lib', __DIR__], 
-        ['db' => ['dsn' => 'mysql:host=localhost;dbname=eve_test_blog', 'user' => 'test', 'pass' => 'test']]);
+Eve::run(__DIR__);
