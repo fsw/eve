@@ -36,7 +36,7 @@ class Command_Migrate extends Action_Command
             // TODO indexes!
             $tables[$tableName]['index_primary'] = 'PRIMARY KEY (`id`)';
         }
-        $db = new Db(Eve::setting('db'));
+        $db = new Db(Eve::config('db'));
         $tools = new db_Tools($db);
         $sqls = $tools->diffStructures($this->initial ? array() : $tools->getStructure(), $tables, $this->drop);
         if (empty($sqls)) {

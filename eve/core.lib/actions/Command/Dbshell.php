@@ -7,7 +7,7 @@ class Command_Dbshell extends Action_Command
     // TODO parameter for db connection
     public function run()
     {
-        $db = new Db(Eve::setting('db'));
+        $db = new Db(Eve::config('db'));
         while (! feof(STDIN)) {
             print 'sql# ';
             $cmd = $this->readLine();

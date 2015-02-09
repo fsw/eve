@@ -169,15 +169,10 @@ abstract class Entity
 
     protected static function getFields()
     {
-        // TODO cache this!!!!
-        // var_dump("ASDASDXXXX", get_called_class());
         $ret = array();
         foreach (Eve::getFieldsAnnotations(get_called_class()) as $field => $annotations) {
-            // var_dump("33333");
             foreach ($annotations as $annotation) {
-                // var_dump($annotation);
                 if ($annotation instanceof Field) {
-                    // var_dump($annotation);
                     $annotation->name = $field;
                     $annotation->entity = get_called_class();
                     $ret[$field] = $annotation;
@@ -206,7 +201,7 @@ abstract class Entity
     final protected static function getDb()
     {
         if (empty(self::$db)) {
-            self::$db = new Db(Eve::setting('db'));
+            self::$db = new Db(Eve::config('db'));
         }
         return self::$db;
     }
