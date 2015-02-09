@@ -103,7 +103,7 @@ abstract class Entity
 
     protected static function getOneByQuery ($query, $params = []) {
         $row = self::getDb()->fetchRow(
-                'SELECT * FROM ' . self::getTableName() . ' ' . $query, $params);
+                'SELECT * FROM ' . static::getTableName() . ' ' . $query, $params);
         if (empty($row))
             return null;
         $className = get_called_class();
