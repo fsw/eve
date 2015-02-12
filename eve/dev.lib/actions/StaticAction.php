@@ -1,7 +1,6 @@
 <?php
-
-/** @UrlName('static') */
-class Frontend_Static extends Action_Http
+/** UrlName('static') */
+class StaticAction extends Action_Http
 {
 
     /** @Param(fullPath=true) */

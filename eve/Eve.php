@@ -17,7 +17,6 @@ final class Eve
 
     private static $appRoot = '';
     private static $eveRoot = '';
-    private static $vendorRoot = '';
     private static $cacheDir = '';
 
     private static $libRoots = [];
@@ -53,6 +52,7 @@ final class Eve
         self::$appRoot = $root . DS;
         self::$eveRoot = dirname(__FILE__) . DS;
         self::$libRoots[] = self::$eveRoot . 'core.lib' . DS;
+        self::$libRoots[] = self::$eveRoot . 'dev.lib' . DS;
         
         self::startTimer('other');
         // TODO move to Eve?
@@ -69,8 +69,6 @@ final class Eve
         }
         self::$libRoots[] = self::$appRoot;
         self::$libRoots = array_reverse(self::$libRoots);
-        
-        self::$vendorRoot = self::$eveRoot . 'vendor' . DS;
         
         register_shutdown_function(['Eve', 'shutdown']);
         
@@ -221,8 +219,12 @@ final class Eve
     }
 
     public static function requireVendor($file)
-    {
-        require_once static::$vendorRoot . $file;
+    {   
+        foreach (static::$libRoots as $root) {
+            if (file_exists($root . 'vendor' . DS . $file)) {
+                require_once $root . 'vendor' . DS . $file;
+            }
+        }
     }
 
     public static function getCacheDir()
