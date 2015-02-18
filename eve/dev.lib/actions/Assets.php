@@ -10,8 +10,8 @@ class Assets extends Action_Http
     {
         $includePaths = [];
         foreach (Eve::getLibRoots() as $root) {
-            if (Fs::isDir($root . 'assets')) {
-                $includePaths[] = $root . 'assets';
+            if (Fs::isDir($root . 'assets' . DS . 'includes')) {
+                $includePaths[] = $root . 'assets' . DS . 'includes';
             }
         }
         $ext = pathinfo($fullPath, PATHINFO_EXTENSION);
